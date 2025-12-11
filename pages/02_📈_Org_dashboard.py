@@ -3,6 +3,7 @@ import pandas as pd
 
 from src.indicator_catalog import EDUCATIONPEOPLE_INDICATORS
 from src.dashboard_utils import run_dashboard_with_gender
+from src.sample_data import demo_mapping
 
 
 st.title("📈 EducationPeople – Organizational Dashboard")
@@ -11,47 +12,13 @@ st.write(
     """
 Upload a dataset that includes:
 
-- Project indicator names
-- Mapped organizational indicator IDs
-- Reported values and (optionally) gender-disaggregated values
+- Project indicator names  
+- Mapped organizational indicator IDs  
+- Reported values and (optionally) gender-disaggregated values  
 
 Or use the built-in demo dataset to see how the dashboard works.
 """
 )
-
-
-def make_demo_mapping_df() -> pd.DataFrame:
-    data = {
-        "Project": [
-            "Project A – Remedial Learning",
-            "Project A – Remedial Learning",
-            "Project B – School Infrastructure",
-            "Project C – Teacher Training",
-            "Project D – Reading Promotion",
-            "Project E – Community Engagement",
-        ],
-        "Project_Indicator_Name": [
-            "Number of students attending remedial classes",
-            "Number of students receiving learning support at school",
-            "Number of schools with improved classrooms",
-            "Number of teachers trained in active pedagogy",
-            "Number of reading books distributed to students",
-            "Number of households engaged in parenting sessions",
-        ],
-        "Mapped_Org_Indicator_ID": [
-            "EDP_OUT1_STUD",
-            "EDP_OUT1_STUD",
-            "EDP_OUT1_SCH",
-            "EDP_OUT1_TCH",
-            "EDP_OUT1_BKS",
-            "EDP_OUT2_HH",
-        ],
-        "Reported_Value": [1200, 800, 25, 160, 5000, 900],
-        "Female_Value": [700, 480, 0, 90, 2600, 600],
-        "Male_Value": [500, 320, 0, 70, 2400, 300],
-    }
-    return pd.DataFrame(data)
-
 
 uploaded_file = st.file_uploader(
     "Upload mapping + values data (CSV/Excel):",
@@ -64,9 +31,10 @@ use_demo = st.checkbox(
     value=not uploaded_file,
 )
 
+# --- Load data: demo or uploaded ---
 if use_demo:
-    df = make_demo_mapping_df()
-    st.info("Using built-in demo dataset.")
+    df = demo_mapping()
+    st.info("Using built-in demo mapping dataset.")
 elif uploaded_file:
     if uploaded_file.name.lower().endswith(".csv"):
         df = pd.read_csv(uploaded_file)
@@ -75,6 +43,7 @@ elif uploaded_file:
 else:
     df = pd.DataFrame()
 
+# --- Show dashboard ---
 if not df.empty:
     st.subheader("Input data preview")
     st.dataframe(df.head(20), use_container_width=True)

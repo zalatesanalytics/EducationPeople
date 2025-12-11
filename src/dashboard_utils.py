@@ -21,13 +21,10 @@ def run_dashboard_with_gender(
     male_col: str = "Male_Value",
 ) -> None:
     """
-    Build an org-level dashboard with optional gender disaggregation.
-
-    Expects a DataFrame containing at least:
-        - org_indicator_col (mapped org indicator ID)
-        - project_col
-        - indicator_col
-        - reported_col (or it will be simulated)
+    Build an org-level dashboard with:
+      - KPI cards (students, schools, teachers, households)
+      - Overall totals by org indicator
+      - Gender-disaggregated charts
     """
 
     if df.empty:
@@ -42,6 +39,7 @@ def run_dashboard_with_gender(
     if reported_col not in df.columns:
         df[reported_col] = np.random.randint(50, 5000, size=len(df))
 
+    # Only keep rows that have a mapped org indicator
     df = df[df[org_indicator_col].notna()].copy()
     if df.empty:
         st.info("No mapped indicators found after filtering.")
@@ -58,6 +56,32 @@ def run_dashboard_with_gender(
     # ----------------- Org totals (all genders) ----------------- #
     org_agg = merged.groupby([org_indicator_col, "name"], as_index=False)[reported_col].sum()
     org_agg = org_agg.rename(columns={reported_col: "Total_Value"})
+
+    # ---------- NEW: KPI overview widgets ---------- #
+    st.markdown("### 🔹 Key Performance Indicators")
+
+    # Map org_indicator_id to KPI label
+    kpi_defs = {
+        "EDP_OUT1_STUD": "Total students reached",
+        "EDP_OUT1_SCH": "Total schools supported",
+        "EDP_OUT1_TCH": "Total teachers trained",
+        "EDP_OUT2_HH": "Total households engaged",
+    }
+
+    # Compute totals for each KPI (0 if not present)
+    kpi_values = {}
+    for ind_id, label in kpi_defs.items():
+        value = (
+            org_agg.loc[org_agg[org_indicator_col] == ind_id, "Total_Value"]
+            .sum()
+        )
+        kpi_values[label] = int(value) if not np.isnan(value) else 0
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("👩‍🎓 Students reached", f"{kpi_values['Total students reached']:,}")
+    col2.metric("🏫 Schools supported", f"{kpi_values['Total schools supported']:,}")
+    col3.metric("👩‍🏫 Teachers trained", f"{kpi_values['Total teachers trained']:,}")
+    col4.metric("🏠 Households engaged", f"{kpi_values['Total households engaged']:,}")
 
     st.markdown("### 🔹 Organization-level totals (all genders combined)")
     st.dataframe(org_agg, use_container_width=True)

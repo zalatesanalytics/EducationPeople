@@ -18,8 +18,7 @@ Upload a dataset that includes:
 
 Or use the built-in demo dataset to see how the dashboard works.
 
-You can also filter by **country, region, district, school, and project**
-to compare performance across locations and interventions.
+Use the sidebar to filter by **Country** and **Project**.
 """
 )
 
@@ -46,16 +45,12 @@ elif uploaded_file:
 else:
     df = pd.DataFrame()
 
-# -------- Subnational & project filters --------
+# -------- Sidebar filters: Country & Project --------
 if not df.empty:
-    st.subheader("Filters")
-
-    # Work on a copy so original df isn't destroyed
-    filt_df = df.copy()
-
-    # Sidebar or top filters? Let's use the sidebar to save space.
     with st.sidebar:
-        st.markdown("### 🌍 Location & Project Filters")
+        st.markdown("### 🌍 Filters")
+
+        filt_df = df.copy()
 
         # Country filter
         if "Country" in filt_df.columns:
@@ -68,46 +63,6 @@ if not df.empty:
             if selected_countries:
                 filt_df = filt_df[filt_df["Country"].isin(selected_countries)]
 
-        # Region filter
-        if "Region" in filt_df.columns:
-            regions = sorted(filt_df["Region"].dropna().unique())
-            selected_regions = st.multiselect(
-                "Region",
-                options=regions,
-                default=regions,
-            )
-            if selected_regions:
-                filt_df = filt_df[filt_df["Region"].isin(selected_regions)]
-
-        # District filter
-        if "District" in filt_df.columns:
-            districts = sorted(filt_df["District"].dropna().unique())
-            selected_districts = st.multiselect(
-                "District",
-                options=districts,
-                default=districts,
-            )
-            if selected_districts:
-                filt_df = filt_df[filt_df["District"].isin(selected_districts)]
-
-        # School filter
-        # (column may be School_Name or School; use whichever exists)
-        school_col = None
-        if "School_Name" in filt_df.columns:
-            school_col = "School_Name"
-        elif "School" in filt_df.columns:
-            school_col = "School"
-
-        if school_col is not None:
-            schools = sorted(filt_df[school_col].dropna().unique())
-            selected_schools = st.multiselect(
-                "School",
-                options=schools,
-                default=schools,
-            )
-            if selected_schools:
-                filt_df = filt_df[filt_df[school_col].isin(selected_schools)]
-
         # Project filter
         if "Project" in filt_df.columns:
             projects = sorted(filt_df["Project"].dropna().unique())
@@ -119,20 +74,19 @@ if not df.empty:
             if selected_projects:
                 filt_df = filt_df[filt_df["Project"].isin(selected_projects)]
 
-    # Show preview of filtered data
     st.subheader("Filtered data preview")
     st.dataframe(filt_df.head(20), use_container_width=True)
 
     if filt_df.empty:
-        st.warning("No data after applying filters. Try selecting more locations/projects.")
+        st.warning("No data after applying filters. Try selecting more countries/projects.")
     else:
-        # Run the dashboard with filtered data
         run_dashboard_with_gender(
             filt_df,
             org_indicators=EDUCATIONPEOPLE_INDICATORS,
             indicator_col="Project_Indicator_Name",
             org_indicator_col="Mapped_Org_Indicator_ID",
             project_col="Project",
+            country_col="Country",
         )
 else:
     st.info("Upload a file or enable the demo dataset to view the dashboard.")

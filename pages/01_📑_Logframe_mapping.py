@@ -3,6 +3,7 @@ import pandas as pd
 
 from src.indicator_catalog import EDUCATIONPEOPLE_INDICATORS
 from src.mapping_engine import map_indicator_to_org
+from src.sample_data import demo_logframe
 
 
 st.title("📑 Logframe Mapping – Project → EducationPeople")
@@ -15,40 +16,7 @@ organizational indicator each project indicator contributes to.
 """
 )
 
-
-def make_demo_logframe() -> pd.DataFrame:
-    data = {
-        "Project": [
-            "Project A – Remedial Learning",
-            "Project A – Remedial Learning",
-            "Project B – School Infrastructure",
-            "Project C – Teacher Training",
-            "Project D – Reading Promotion",
-            "Project E – Community Engagement",
-        ],
-        "Indicator_Name": [
-            "Number of students attending remedial classes",
-            "Number of students receiving learning support at school",
-            "Number of schools with improved classrooms",
-            "Number of teachers trained in active pedagogy",
-            "Number of reading books distributed to students",
-            "Number of households engaged in parenting sessions",
-        ],
-        "Level": [
-            "Outcome",
-            "Outcome",
-            "Output",
-            "Output",
-            "Output",
-            "Output",
-        ],
-        "Reported_Value": [1200, 800, 25, 160, 5000, 900],
-        "Female_Value": [700, 480, 0, 90, 2600, 600],
-        "Male_Value": [500, 320, 0, 70, 2400, 300],
-    }
-    return pd.DataFrame(data)
-
-
+# --- Controls ---
 uploaded_files = st.file_uploader(
     "Upload one or more logframe files (Excel/CSV):",
     type=["xlsx", "xls", "csv"],
@@ -56,17 +24,19 @@ uploaded_files = st.file_uploader(
 )
 
 use_demo = st.checkbox(
-    "Use built-in demo logframe (EducationPeople sample projects)",
+    "Use built-in demo logframe (sample EducationPeople projects)",
     value=not uploaded_files,
 )
 
 indicator_col = st.text_input("Column containing indicator text:", value="Indicator_Name")
 project_col = st.text_input("Column containing project name:", value="Project")
-threshold = st.slider("Similarity threshold", 0.3, 0.9, 0.5, 0.05)
+threshold = st.slider("Similarity threshold for mapping", 0.3, 0.9, 0.5, 0.05)
 
+# --- Load data: demo or uploaded ---
 if use_demo:
-    logframes_df = make_demo_logframe()
-    st.info("Showing built-in demo logframe.")
+    logframes_df = demo_logframe()
+    logframes_df["__Source_File"] = "demo_logframe"
+    st.info("Using built-in demo logframe.")
 elif uploaded_files:
     dfs = []
     for f in uploaded_files:
@@ -80,10 +50,14 @@ elif uploaded_files:
             df[project_col] = f.name
         dfs.append(df)
 
-    logframes_df = pd.concat(dfs, ignore_index=True)
+    if dfs:
+        logframes_df = pd.concat(dfs, ignore_index=True)
+    else:
+        logframes_df = pd.DataFrame()
 else:
     logframes_df = pd.DataFrame()
 
+# --- Show preview & run mapping ---
 if not logframes_df.empty:
     st.subheader("Combined logframes (preview)")
     st.dataframe(logframes_df.head(20), use_container_width=True)
@@ -92,6 +66,7 @@ if not logframes_df.empty:
         st.error(f"Column `{indicator_col}` not found in data.")
     else:
         mapping_records = []
+
         for _, row in logframes_df.iterrows():
             text = str(row[indicator_col])
             org_id, score = map_indicator_to_org(
@@ -102,6 +77,7 @@ if not logframes_df.empty:
             mapping_records.append(
                 {
                     "Project": row.get(project_col, "Unknown project"),
+                    "Source_File": row.get("__Source_File", ""),
                     "Project_Indicator_Name": text,
                     "Mapped_Org_Indicator_ID": org_id,
                     "Similarity_Score": score,
@@ -113,13 +89,13 @@ if not logframes_df.empty:
 
         mapping_df = pd.DataFrame(mapping_records)
 
-        st.subheader("AI mapping results")
+        st.subheader("🤖 AI mapping results")
         st.dataframe(mapping_df, use_container_width=True)
 
         st.download_button(
             "⬇️ Download mapping as CSV (for dashboard page)",
             data=mapping_df.to_csv(index=False),
-            file_name="educationpeople_mapping_demo.csv",
+            file_name="educationpeople_mapping.csv",
             mime="text/csv",
         )
 else:

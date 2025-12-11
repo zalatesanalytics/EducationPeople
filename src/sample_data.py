@@ -11,7 +11,7 @@ import pandas as pd
 
 
 def demo_logframe() -> pd.DataFrame:
-    """Create a built-in demo logframe simulating 5 sample projects."""
+    """Create a built-in demo logframe simulating 5 sample projects with subnational breakdown."""
     data = {
         "Project": [
             "Project A – Remedial Learning",
@@ -20,6 +20,38 @@ def demo_logframe() -> pd.DataFrame:
             "Project C – Teacher Training",
             "Project D – Reading Promotion",
             "Project E – Community Engagement",
+        ],
+        "Country": [
+            "Ethiopia",
+            "Ethiopia",
+            "Ethiopia",
+            "Kenya",
+            "Kenya",
+            "Ethiopia",
+        ],
+        "Region": [
+            "Oromia",
+            "Oromia",
+            "Amhara",
+            "Nairobi County",
+            "Nairobi County",
+            "Tigray",
+        ],
+        "District": [
+            "Bishoftu",
+            "Bishoftu",
+            "Bahir Dar Zuria",
+            "Embakasi",
+            "Kasarani",
+            "Adwa",
+        ],
+        "School_Name": [
+            "Bishoftu Primary School",
+            "Bishoftu Primary School",
+            "Lakeview Primary School",
+            "Embakasi Community School",
+            "Kasarani Model School",
+            "Adwa Community School",
         ],
         "Indicator_Name": [
             "Number of students attending remedial classes",
@@ -45,7 +77,7 @@ def demo_logframe() -> pd.DataFrame:
 
 
 def demo_mapping() -> pd.DataFrame:
-    """Create a dataset that simulates output from the AI mapping engine."""
+    """Create a dataset that simulates output from the AI mapping engine, with subnational info."""
     data = {
         "Project": [
             "Project A – Remedial Learning",
@@ -54,6 +86,38 @@ def demo_mapping() -> pd.DataFrame:
             "Project C – Teacher Training",
             "Project D – Reading Promotion",
             "Project E – Community Engagement",
+        ],
+        "Country": [
+            "Ethiopia",
+            "Ethiopia",
+            "Ethiopia",
+            "Kenya",
+            "Kenya",
+            "Ethiopia",
+        ],
+        "Region": [
+            "Oromia",
+            "Oromia",
+            "Amhara",
+            "Nairobi County",
+            "Nairobi County",
+            "Tigray",
+        ],
+        "District": [
+            "Bishoftu",
+            "Bishoftu",
+            "Bahir Dar Zuria",
+            "Embakasi",
+            "Kasarani",
+            "Adwa",
+        ],
+        "School_Name": [
+            "Bishoftu Primary School",
+            "Bishoftu Primary School",
+            "Lakeview Primary School",
+            "Embakasi Community School",
+            "Kasarani Model School",
+            "Adwa Community School",
         ],
         "Project_Indicator_Name": [
             "Number of students attending remedial classes",
@@ -91,4 +155,3 @@ def save_demo_files(path="data/sample_logframes"):
         "logframe_file": f"{path}/demo_logframe.csv",
         "mapping_file": f"{path}/demo_mapping.csv",
     }
-
